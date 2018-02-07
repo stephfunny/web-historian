@@ -4,4 +4,5 @@ var archive = require('../helpers/archive-helpers');
 
 exports.handleRequest = function (req, res) {
   res.end(archive.paths.list);
+  
 };
