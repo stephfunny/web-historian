@@ -1,7 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
-var http = require('http');
+var http = require('https');
 
 
 /*
@@ -67,9 +67,9 @@ exports.downloadUrls = function(urls) {
   urls.forEach(function(url) {
     exports.isUrlArchived(url, function(exists) {
       if (!exists) {
-        http.get('http://' + url, res => {
+        http.get('https://' + url, res => {
           collectData(res, function(data) {
-            fs.writeFile(exports.paths.archivedSites + '/' + url, data, 'utf8', err => {
+            fs.writeFile(exports.paths.archivedSites + '/' + url, data, err => {
               if (err) {
                 throw err;
               }
