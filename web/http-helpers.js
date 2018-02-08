@@ -43,6 +43,22 @@ exports.serveAssets = function(res, asset, callback) {
       res.write(html);
       res.end();
     });
+  } else {
+    archive.isUrlArchived(asset, function(exists) {
+      if (exists) {
+        fs.readFile(archive.paths.archivedSites + asset, function(err, data) {
+          if (err) {
+            throw err;
+          }
+          res.writeHeader(200, exports.headers);
+          res.write(data);
+          res.end();
+        });
+      } else {
+        res.writeHeader(404, exports.headers);
+        res.end();
+      }
+    });
   }
   //check if archived, if yes, return the archived site
   //if not archived, check if it's in list, if yes --> server loading page
