@@ -2,7 +2,6 @@ var path = require('path');
 var fs = require('fs');
 var archive = require('../helpers/archive-helpers');
 // var url = require('url');
-var qs = require('query-string');
 
 exports.headers = {
   'access-control-allow-origin': '*',
@@ -21,38 +20,30 @@ exports.serveAssets = function(res, asset, callback) {
       if (err) {
         throw err;
       }
-      res.writeHeader(200, exports.headers);
-      res.write(html);
-      res.end();
+      exports.sendResponse(res, html, 200, exports.headers);
     });
   } else if (asset === '/styles.css') {
-    fs.readFile(archive.paths.css, function(err, css) {
+    fs.readFile(archive.paths.siteAssets + asset, function(err, css) {
       if (err) {
         throw err;
       }
-      res.writeHeader(200, {'Content-Type': 'text/css'});
-      res.write(css);
-      res.end();
+      exports.sendResponse(res, css, 200, {'Content-Type': 'text/css'});
     });
   } else if (asset === 'loading') {
     fs.readFile(archive.paths.siteAssets + '/loading.html', function(err, html) {
       if (err) {
         throw err;
       }
-      res.writeHeader(302, exports.headers);
-      res.write(html);
-      res.end();
+      exports.sendResponse(res, html, 302, exports.headers);
     });
   } else {
     archive.isUrlArchived(asset, function(exists) {
       if (exists) {
-        fs.readFile(archive.paths.archivedSites + asset, function(err, data) {
+        fs.readFile(archive.paths.archivedSites + '/' + asset, function(err, data) {
           if (err) {
             throw err;
           }
-          res.writeHeader(200, exports.headers);
-          res.write(data);
-          res.end();
+          exports.sendResponse(res, data, 200, exports.headers);
         });
       } else {
         res.writeHeader(404, exports.headers);
@@ -64,15 +55,15 @@ exports.serveAssets = function(res, asset, callback) {
   //if not archived, check if it's in list, if yes --> server loading page
   //if not in list, add it to the list --> serve loading page
   
-  
-  
 };
 
+
+
 // As you progress, keep thinking about what helper functions you can put here!
-exports.sendResponse = function(response, data, statusCode) {
+exports.sendResponse = function(response, data, statusCode, headers) {
   statusCode = statusCode || 200;
   response.writeHead(statusCode, headers);
-  response.end(JSON.stringify(data));
+  response.end(data.toString());
 };
 
 exports.collectData = function(request, callback) {
@@ -81,9 +72,23 @@ exports.collectData = function(request, callback) {
     data += chunk;
   });
   request.on('end', function() {
-    callback(qs.parse(data).url);
+    callback(data);
   });
 };
+
+// exports.collectData = function(request) {
+//   var temp = [];
+//   var data = '';
+//   request.on('data', function(chunk) {
+//     data += chunk;
+//   });
+//   request.on('end', function() {
+//     //console.log(qs.parse(data).url);
+//     temp.push(qs.parse(data).url);
+//     console.log(temp);
+//   });
+//   return temp;
+// };
 
 exports.makeActionHandler = function(actionMap) {
   return function(request, response) {

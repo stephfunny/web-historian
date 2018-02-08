@@ -1,14 +1,17 @@
 var path = require('path');
 var archive = require('../helpers/archive-helpers');
 var http = require('./http-helpers.js');
+var qs = require('query-string');
 // require more modules/folders here!
 
 exports.handleRequest = function (req, res) {
   // res.end(archive.paths.list);
-  console.log('Serving req type ' + req.method + ' for url ' + req.url);
+  console.log('Serving req type ', req.method, ' for url ', req.url);
   if (req.method === 'POST') { 
+    
     //console.log(req);
-    http.collectData(req, function(url) {
+    http.collectData(req, function(data) {
+      var url = qs.parse(data).url;
       archive.isUrlArchived(url, function(exists) {
         if (exists) {
           http.serveAssets(res, url);
@@ -16,7 +19,7 @@ exports.handleRequest = function (req, res) {
           archive.isUrlInList(url, function(inList) {
             if (!inList) {
               archive.addUrlToList(url + '\n', function() {
-                console.log('Added ' + url + ' to list');
+                //console.log('Added ' + url + ' to list');
               });
             }
           });
